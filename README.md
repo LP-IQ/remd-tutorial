@@ -1,8 +1,22 @@
-# REMD-GUI.jl
+# Tutorial de Replica Exchange MD (REMD)
 
-Interface gráfica interativa para estudar **Replica Exchange Molecular Dynamics (T-REMD)** num sistema simples: um fluido de Lennard-Jones em 2D. Feita para ensino: cada parâmetro de controle do método pode ser alterado e o efeito na amostragem aparece nos gráficos.
+Tutorial sobre **Replica Exchange Molecular Dynamics (T-REMD)**: quais são os parâmetros de controle do método, como cada um afeta a amostragem e o que variar quando a amostragem falha.
 
-Inspirada na interface do [FundamentosDMC.jl](https://github.com/m3g/FundamentosDMC.jl).
+A ferramenta do tutorial é uma interface gráfica interativa em Julia (`remd_gui.jl`) que roda um REMD num sistema simples, um fluido de Lennard-Jones em 2D, e mostra o efeito de cada parâmetro nos gráficos. Inspirada na interface do [FundamentosDMC.jl](https://github.com/m3g/FundamentosDMC.jl).
+
+## Conteúdo
+
+| Arquivo | O que é |
+| --- | --- |
+| [docs/guia_parametros.md](docs/guia_parametros.md) | O tutorial: cada parâmetro, sua importância no REMD, como ler os painéis e um roteiro de experimentos |
+| `remd_gui.jl` | A GUI usada nos experimentos |
+
+## Como seguir o tutorial
+
+1. Instale e abra a GUI (seções abaixo).
+2. Leia "O que a GUI simula" e "Como ler a janela" no guia.
+3. Faça os experimentos do "Roteiro de experimentos", um parâmetro por vez, com a mesma semente.
+4. Ao fim de cada corrida, use "Salvar figuras" e compare com o que o guia prevê.
 
 ## O que a GUI mostra
 
@@ -23,8 +37,8 @@ Inspirada na interface do [FundamentosDMC.jl](https://github.com/m3g/Fundamentos
 Requer [Julia](https://julialang.org/downloads/) e suporte a OpenGL 3.3 (exigência do GLMakie). Testado em Ubuntu 20.04.
 
 ```bash
-git clone https://github.com/LP-IQ/REMD-GUI.jl.git
-cd REMD-GUI.jl
+git clone https://github.com/LP-IQ/remd-tutorial.git
+cd remd-tutorial
 julia -e 'using Pkg; Pkg.add("GLMakie")'
 ```
 
@@ -63,10 +77,6 @@ P = \min\left\{1,\ \exp\left[\left(\frac{1}{kT_i}-\frac{1}{kT_j}\right)\left(U_i
 
 - Após uma troca aceita, as velocidades são reescaladas por √(kT novo / kT antigo).
 
-## Documentação
-
-[docs/guia_parametros.md](docs/guia_parametros.md) explica cada parâmetro, sua importância no REMD, como ler cada painel e um roteiro de experimentos.
-
 ## Limitações
 
 - O cálculo de forças é O(N²); acima de algumas centenas de partículas a simulação fica lenta.
@@ -74,4 +84,5 @@ P = \min\left\{1,\ \exp\left[\left(\frac{1}{kT_i}-\frac{1}{kT_j}\right)\left(U_i
 
 ## Autores
 
-Lucas Pinheiro (IQ-UNICAMP).
+- Lucas Avila Pinheiro
+- Eduard D. S. Mourão
