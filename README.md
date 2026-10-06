@@ -8,15 +8,16 @@ A ferramenta do tutorial é uma interface gráfica interativa em Julia (`remd_gu
 
 | Arquivo | O que é |
 | --- | --- |
-| [docs/guia_parametros.md](docs/guia_parametros.md) | O tutorial: cada parâmetro, sua importância no REMD, como ler os painéis e um roteiro de experimentos |
+| [docs/tutorial.md](docs/tutorial.md) | O tutorial completo: teoria, instalação, visita guiada à GUI, nove experimentos passo a passo, diagnóstico e relação com simulações moleculares |
+| [docs/guia_parametros.md](docs/guia_parametros.md) | Referência rápida de cada parâmetro e de cada painel |
 | `remd_gui.jl` | A GUI usada nos experimentos |
 
 ## Como seguir o tutorial
 
 1. Instale e abra a GUI (seções abaixo).
-2. Leia "O que a GUI simula" e "Como ler a janela" no guia.
-3. Faça os experimentos do "Roteiro de experimentos", um parâmetro por vez, com a mesma semente.
-4. Ao fim de cada corrida, use "Salvar figuras" e compare com o que o guia prevê.
+2. Abra [docs/tutorial.md](docs/tutorial.md) e siga as seções na ordem: teoria (1 a 4), primeira simulação (5 a 7), parâmetros (8) e experimentos (9).
+3. Em cada experimento, mude um parâmetro por vez, com a mesma semente, e use "Salvar figuras" ao final.
+4. Use a tabela de diagnóstico (seção 10) para interpretar o que viu.
 
 ## O que a GUI mostra
 
