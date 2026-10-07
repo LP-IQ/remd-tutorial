@@ -8,7 +8,7 @@
 # Unidades reduzidas: massa = 1, energia em unidades de epsilon (poço de Lennard-Jones), temperatura como kT.
 # Cada painel da direita é um ESTADO (kT fixo); a cor é a identidade da CONFIGURAÇÃO (walker).
 # Troca aceita = duas configurações trocam de painel.
-# Documentação: README.md e docs/guia_parametros.md
+# Documentação: README.md e docs/tutorial.md
 
 using GLMakie, Random, Printf
 
@@ -21,7 +21,7 @@ mutable struct Replica
     x::Vector{Float64}; y::Vector{Float64}       # posições
     vx::Vector{Float64}; vy::Vector{Float64}     # velocidades
     fx::Vector{Float64}; fy::Vector{Float64}     # forças
-    U::Float64                                   # energia potencial (eps)
+    U::Float64                                   # energia potencial (unidades de epsilon)
     walker::Int                                  # identidade da configuração (cor)
 end
 Replica(n::Int, w::Int) = Replica(zeros(n), zeros(n), zeros(n), zeros(n), zeros(n), zeros(n), 0.0, w)
@@ -181,7 +181,7 @@ const PALETTES = Dict(
         RGBf(0.6, 0.3, 0.8), RGBf(0.2, 0.8, 0.8), RGBf(0.9, 0.3, 0.6), RGBf(0.4, 0.4, 0.4),
         RGBf(0.7, 0.8, 0.2), RGBf(0.6, 0.4, 0.2), RGBf(0.1, 0.4, 0.4), RGBf(0.8, 0.8, 0.3)],
 )
-# cor por temperatura: mapa 'turbo' (azul = frio -> verde -> amarelo -> vermelho = quente)
+# cor por temperatura: mapa 'turbo' (azul = menor kT -> verde -> amarelo -> vermelho = maior kT)
 const TURBO = GLMakie.Makie.to_colormap(:turbo)
 function tempcolor(k, R)
     t = R > 1 ? (k - 1) / (R - 1) : 0.0
@@ -249,7 +249,7 @@ function remd_gui()   # se ainda cortar: redimensione a janela ou edite o tamanh
     Label(left[row[], 1:2], stats; halign=:left, valign=:top, justification=:left, tellwidth=false, tellheight=false, fontsize=12.5)   # última linha absorve a sobra
     rowgap!(left, 4)
 
-    # ---------------- centro: random walk, energia, histogramas, frio x controle ----------------
+    # ---------------- centro: random walk, energia, histogramas, réplica de referência e mapa ----------------
     ax_W = Axis(center[1, 1:2]; title="Random walk das configurações", xlabel="tentativa de troca", ylabel="índice do kT (1 = menor)")
     ax_E = Axis(center[2, 1]; title="Energia potencial por réplica (média móvel)", xlabel="passo (< 0 = equilibração)", ylabel="U (unidades de epsilon)")
     ax_H = Axis(center[2, 2]; title="P(U) por réplica (azul = menor kT, vermelho = maior kT)", xlabel="U (unidades de epsilon)", ylabel="P(U)")
@@ -269,15 +269,15 @@ function remd_gui()   # se ainda cortar: redimensione a janela ou edite o tamanh
     line_cols = [Observable(RGBf(0, 0, 0)) for _ in 1:MAXREP]
     lw_lines = [Observable(1.5) for _ in 1:MAXREP]
     for k in MAXREP:-1:1
-        lines!(ax_E, epts[k]; color=tcols[k], linewidth=lw_e[k])   # frio por último = por cima
+        lines!(ax_E, epts[k]; color=tcols[k], linewidth=lw_e[k])   # menor kT desenhado por último (fica por cima)
         lines!(ax_W, wpts[k]; color=line_cols[k], linewidth=lw_lines[k], alpha=0.85)
         lines!(ax_H, hpts[k]; color=tcols[k], linewidth=lw_e[k])
     end
 
     # rastreio da configuração de menor U: em qual kT ela está a cada tentativa de troca (pontos magenta, opcionais)
     minpts = Observable(Point2f[])
-    AZUL = RGBf(0.85, 0.0, 0.75)        # magenta: cor fora da paleta dos walkers (nome da variável mantido)
-    scatter!(ax_W, minpts; color=AZUL, markersize=7, strokewidth=0, visible=tg_min.active)
+    COR_MENOR_U = RGBf(0.85, 0.0, 0.75)   # magenta: cor que não aparece na paleta dos walkers
+    scatter!(ax_W, minpts; color=COR_MENOR_U, markersize=7, strokewidth=0, visible=tg_min.active)
 
     # mapa de ocupação: occ[estado, walker] = fração do tempo; NaN = célula não usada
     vlines!(ax_E, [0.0]; color=:gray40, linestyle=:dash, linewidth=1.5)   # fim da equilibração
@@ -312,8 +312,8 @@ function remd_gui()   # se ainda cortar: redimensione a janela ou edite o tamanh
     traj = Tuple{Int,Int,Float64,Vector{Float32},Vector{Float32}}[]
     map_mode = Ref("Ocupação")
     Usm = fill(NaN, MAXREP)                 # média móvel exponencial de U por estado (só para o gráfico)
-    rt_stage = zeros(Int, MAXREP)          # 0: ainda não tocou o frio; 1: busca o quente; 2: busca o frio
-    rt_count = zeros(Int, MAXREP)          # idas e voltas (frio -> quente -> frio) por walker
+    rt_stage = zeros(Int, MAXREP)          # 0: ainda não tocou o menor kT; 1: a caminho do maior kT; 2: voltando ao menor kT
+    rt_count = zeros(Int, MAXREP)          # round trips (menor kT -> maior kT -> menor kT) por walker
 
     mean_or_nan(v) = isempty(v) ? NaN : sum(v) / length(v)
 
@@ -403,7 +403,7 @@ function remd_gui()   # se ainda cortar: redimensione a janela ou edite o tamanh
         end
         kmin = argmin([r.U for r in s.reps])            # painel com a configuração de menor U: moldura magenta
         for k in 1:R
-            c = k == kmin ? AZUL : RGBf(0, 0, 0); lw = k == kmin ? 4.0 : 1.0
+            c = k == kmin ? COR_MENOR_U : RGBf(0, 0, 0); lw = k == kmin ? 4.0 : 1.0
             ax = axs[k]
             ax.leftspinecolor = c; ax.rightspinecolor = c; ax.topspinecolor = c; ax.bottomspinecolor = c
             ax.spinewidth = lw
@@ -451,7 +451,7 @@ function remd_gui()   # se ainda cortar: redimensione a janela ou edite o tamanh
         if collect
             kmin = argmin([r.U for r in s.reps])
             minU_count[kmin, s.reps[kmin].walker] += 1
-            r = s.reps[1]                                   # réplica no kT mais frio (a cada 10 passos)
+            r = s.reps[1]                                   # réplica no menor kT (a cada 10 passos)
             length(traj) < 50000 && push!(traj, (s.step, r.walker, r.U, Float32.(r.x), Float32.(r.y)))
         end
         return nothing
@@ -512,10 +512,11 @@ function remd_gui()   # se ainda cortar: redimensione a janela ou edite o tamanh
         limits!(ax_main, 0, L, 0, L)
         limits!(ax_O, 0.5, R + 0.5, 0.5, R + 0.5)
         ax_O.xticks = 1:R; ax_O.yticks = 1:R
+        ax_W.yticks = 1:R                          # índices inteiros no random walk
         hm.colorrange = (0.0, 2.0 / R)            # ideal (1/R) no meio da escala
         for k in 1:MAXREP
             tcols[k][] = tempcolor(min(k, R), R)
-            lw_e[k][] = (k == 1 || k == R) ? 3.0 : 1.3      # extremos (frio e quente) em destaque
+            lw_e[k][] = (k == 1 || k == R) ? 3.0 : 1.3      # extremos (menor e maior kT) em destaque
         end
         stats[] = "Aceitação: —"
         record_walk()

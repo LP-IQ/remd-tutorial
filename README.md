@@ -9,7 +9,6 @@ A ferramenta do tutorial é uma interface gráfica interativa em Julia (`remd_gu
 | Arquivo | O que é |
 | --- | --- |
 | [docs/tutorial.md](docs/tutorial.md) | O tutorial completo: teoria, instalação, visita guiada à GUI, nove experimentos passo a passo, diagnóstico e relação com simulações moleculares |
-| [docs/guia_parametros.md](docs/guia_parametros.md) | Referência rápida de cada parâmetro e de cada painel |
 | `remd_gui.jl` | A GUI usada nos experimentos |
 
 ## Como seguir o tutorial
@@ -49,7 +48,7 @@ julia -e 'using Pkg; Pkg.add("GLMakie")'
 julia -t auto remd_gui.jl
 ```
 
-`-t auto` usa uma thread por núcleo; cada réplica é propagada numa thread. A primeira execução demora alguns minutos, porque o Julia compila o GLMakie.
+`-t auto` usa uma thread por núcleo; cada réplica é propagada numa thread. A primeira execução é mais lenta, porque o Julia compila o GLMakie.
 
 No REPL:
 
@@ -70,7 +69,7 @@ Sequência básica:
 - Partículas de Lennard-Jones em 2D, caixa quadrada periódica, sem raio de corte (todos os pares, imagem mínima).
 - Unidades reduzidas: massa 1, energia em unidades de epsilon, temperatura como kT.
 - Dinâmica de Langevin (integrador BAOAB) em cada réplica.
-- Tentativas de troca entre kT vizinhos, alternando pares pares e ímpares, com o critério
+- Tentativas de troca entre kT vizinhos, alternando entre os pares (1-2, 3-4, …) e (2-3, 4-5, …), com o critério
 
 ```math
 P = \min\left\{1,\ \exp\left[\left(\frac{1}{kT_i}-\frac{1}{kT_j}\right)\left(U_i-U_j\right)\right]\right\}

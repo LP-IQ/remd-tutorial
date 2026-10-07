@@ -1,20 +1,18 @@
-# Tutorial de Replica Exchange MD com a GUI
+# Tutorial de Replica Exchange MD
 
-Este tutorial ensina Replica Exchange Molecular Dynamics em temperatura (T-REMD) pela prática: você muda um parâmetro de cada vez na GUI `remd_gui.jl`, observa o que acontece com a amostragem e aprende a diagnosticar e corrigir problemas.
+Este tutorial apresenta o método de Replica Exchange Molecular Dynamics em temperatura (T-REMD) usando a interface gráfica `remd_gui.jl`. A proposta é variar um parâmetro de cada vez, observar o efeito na amostragem e, a partir disso, discutir como diagnosticar e corrigir problemas.
 
-**O que você deve saber ao final**
+Os tópicos são:
 
-- Por que o REMD existe e o que ele garante (e o que não garante).
-- Quais são os parâmetros de controle do método e o que cada um faz.
-- Como reconhecer, nos gráficos, uma escada de temperaturas boa e uma ruim.
-- O que variar quando a amostragem falha.
-- Como esses parâmetros aparecem numa simulação molecular real.
+- o problema que o REMD resolve e o que o método garante;
+- os parâmetros de controle e o efeito de cada um;
+- como reconhecer, nos gráficos, uma escada de temperaturas adequada;
+- o que variar quando a amostragem falha;
+- como esses parâmetros aparecem numa simulação molecular.
 
-**Pré-requisitos**: noções de dinâmica molecular (integração, termostato, energia potencial) e do ensemble canônico. Não é preciso saber Julia.
+Pré-requisitos: noções de dinâmica molecular (integração, termostato, energia potencial) e do ensemble canônico. Não é preciso conhecer Julia.
 
-**Tempo estimado**: 2 a 3 horas para o roteiro completo; 40 minutos para as partes 1 a 5 e os experimentos 1 a 3.
-
-**Convenção sobre resultados**: sempre que o texto diz *observado*, o resultado foi visto em corridas reais com a GUI. Quando diz *esperado*, é uma previsão da teoria que você deve conferir; os números exatos dependem da semente e da duração.
+Nos experimentos da seção 9, os resultados marcados como *observado* foram obtidos em corridas com a GUI. Os marcados como *esperado* são previsões que devem ser conferidas; os valores numéricos variam com a semente e com a duração da corrida.
 
 ## Sumário
 
@@ -45,7 +43,7 @@ Uma simulação de dinâmica molecular a temperatura T visita os estados do sist
 \tau \propto \exp\left(\frac{\Delta U^{\ddagger}}{kT}\right)
 ```
 
-Quando ΔU‡ é muito maior que kT, a simulação fica presa na bacia onde começou. As médias calculadas convergem, mas para a bacia inicial, não para o ensemble. Esse comportamento se chama **quasi-ergodicidade**, e é traiçoeiro porque nada na simulação avisa que há regiões não visitadas.
+Quando ΔU‡ é muito maior que kT, a simulação fica presa na bacia onde começou. As médias calculadas convergem, mas para a bacia inicial, não para o ensemble. Esse comportamento é chamado de quasi-ergodicidade. Ele é difícil de detectar, porque a própria simulação não indica que há regiões não visitadas.
 
 Aumentar a temperatura resolve a barreira (τ cai exponencialmente), mas então a simulação amostra o ensemble errado: o da temperatura alta. O REMD é uma forma de usar a temperatura alta para cruzar barreiras e, ainda assim, obter o ensemble correto na temperatura baixa.
 
@@ -59,14 +57,14 @@ Simulam-se R cópias independentes do mesmo sistema, chamadas **réplicas**, cad
 
 Com isso, uma configuração que cruzou uma barreira lá em cima pode descer a escada, degrau por degrau, até chegar a T₁. A réplica de referência recebe configurações de bacias que ela nunca alcançaria sozinha.
 
-**Duas palavras que não podem ser confundidas**
+**Estado e walker**
 
 | Termo | O que é | Na GUI |
 | --- | --- | --- |
 | **Estado** | Uma temperatura da escada. É fixo. | Cada painel da direita; o kT no título nunca muda |
 | **Walker** (configuração) | Um conjunto de posições e velocidades que passeia pela escada | A cor das partículas |
 
-Quando uma troca é aceita, os dois walkers trocam de painel. As temperaturas dos painéis não mudam; o que muda é qual configuração está em cada uma. Quase toda confusão sobre REMD vem de misturar esses dois pontos de vista.
+Quando uma troca é aceita, os dois walkers trocam de painel. As temperaturas dos painéis não mudam; o que muda é a configuração que está em cada uma. É importante manter essa distinção, porque as análises podem ser feitas por estado (o que interessa para as médias) ou por walker (o que interessa para avaliar a mistura).
 
 **O que o método garante**
 
@@ -117,7 +115,7 @@ Como T_i < T_j, o fator (β_i − β_j) é positivo.
 - Se U_i > U_j (a configuração no estado frio tem energia **maior** que a do estado quente), o expoente é positivo e a troca é **sempre aceita**. Faz sentido: a configuração de menor energia vai para a temperatura menor.
 - Se U_i < U_j (o caso mais comum), a probabilidade cai exponencialmente com a diferença de energia e com a distância entre as temperaturas.
 
-Consequência central: só há trocas se as duas réplicas puderem ter energias parecidas, ou seja, se as **distribuições de energia P(U) dos dois estados se sobrepuserem**. Guarde essa frase; quase todo o tutorial é uma variação dela.
+Portanto, só há trocas se as duas réplicas puderem ter energias parecidas, isto é, se as distribuições de energia P(U) dos dois estados se sobrepuserem. Essa relação entre sobreposição e taxa de troca é usada em todo o restante do tutorial.
 
 ### 3.4 E a energia cinética?
 
@@ -173,7 +171,7 @@ O comportamento muda com a temperatura:
 - **kT alto**: as partículas se espalham como um gás. A energia potencial fica perto de zero.
 - **kT baixo**: as partículas se juntam em aglomerados, e a energia potencial fica bem negativa.
 
-Formar, desfazer e reorganizar aglomerados é um processo lento em kT baixo: para um aglomerado mudar, partículas precisam se soltar, o que custa energia. Esse é o "evento raro" do sistema, o análogo das barreiras conformacionais de uma molécula. Em kT alto os aglomerados se desfazem com facilidade, e é isso que as réplicas quentes oferecem às frias.
+Formar, desfazer e reorganizar aglomerados é um processo lento em kT baixo: para um aglomerado mudar, partículas precisam se soltar, o que custa energia. Esse processo faz o papel que as barreiras conformacionais têm numa molécula. Em kT alto os aglomerados se desfazem com facilidade, e é isso que as réplicas quentes oferecem às frias.
 
 Além disso, a capacidade calorífica do sistema varia com a temperatura (é maior na região onde os aglomerados se formam), o que torna a escolha da escada um problema não trivial, como em sistemas reais.
 
@@ -233,6 +231,8 @@ Se a janela abrir mostrando os painéis com as partículas espalhadas, a instala
 ## 6. Visita guiada à janela
 
 A janela tem três colunas: controles à esquerda, gráficos no centro e réplicas à direita. Há ainda uma linha de mensagens no rodapé.
+
+![Janela da GUI ao fim de uma corrida com 6 réplicas](figs/exp1_janela.png)
 
 ### 6.1 Coluna da esquerda: controles
 
@@ -380,9 +380,9 @@ O que observar, na ordem:
 
 **Passo 6. Explore os mapas.** Com a corrida em andamento ou terminada, troque o menu Mapa entre as quatro opções e leia cada uma com a tabela da seção 6.3.
 
-**Resultado observado nessa configuração**: taxa de troca entre 0,5 e 0,8 em todos os pares, crescendo do par mais frio para o mais quente, e cerca de 40 round trips em 10 000 passos. Os valores exatos mudam com a semente.
+**Resultado observado nessa configuração**: taxa de troca entre 0,5 e 0,8 em todos os pares, em geral menor no par mais frio, e algumas dezenas de round trips em 20 000 passos (45 em uma das corridas). Os valores mudam com a semente.
 
-**Perguntas para fixar**
+**Questões**
 
 1. Por que a moldura magenta às vezes sai do primeiro painel?
    *Resposta*: porque as distribuições P(U) se sobrepõem. De vez em quando, uma réplica mais quente tem energia menor que a de referência. É essa mesma sobreposição que permite as trocas.
@@ -412,7 +412,7 @@ A escada é o principal controle do REMD. Ela decide duas coisas independentes:
 
 | Se kT máx for… | Consequência |
 | --- | --- |
-| Baixo demais | As trocas funcionam e o random walk parece saudável, mas nenhuma réplica cruza as barreiras. A amostragem em kT mín não melhora. É o erro mais perigoso, porque todos os indicadores de mistura parecem bons |
+| Baixo demais | As trocas funcionam e o random walk parece adequado, mas nenhuma réplica cruza as barreiras. A amostragem em kT mín não melhora, embora os indicadores de mistura sejam bons |
 | Alto demais | A faixa a cobrir cresce, e são necessárias mais réplicas para manter as trocas. Custo desperdiçado |
 
 Como escolher: olhe o painel do maior kT. Se ali as partículas estão espalhadas e os aglomerados não persistem, o topo cumpre sua função.
@@ -578,7 +578,17 @@ Uma tabela para anotar os resultados:
 - Mapa "Ocupação": as células estão perto de 1/6 ≈ 0,17?
 - Mapa "Taxa de troca (kT)": qual par tem a menor taxa?
 
-**Observado**: taxa de troca de 0,5 a 0,8, menor no par mais frio; cerca de 40 round trips em 10 000 passos; ocupação razoavelmente uniforme.
+**Observado** (uma corrida de 20 000 passos): taxa de troca de 0,63 a 0,80, com o menor valor no par mais frio; 45 round trips; ocupação entre 0,11 e 0,26, em torno do ideal de 0,17.
+
+![P(U) com 6 réplicas](figs/exp1_P_U.png)
+
+![Random walk com 6 réplicas](figs/exp1_random_walk.png)
+
+| Taxa de troca | Ocupação | Menor energia |
+| --- | --- | --- |
+| ![Mapa da taxa de troca](figs/exp1_mapa_taxa_de_troca.png) | ![Mapa de ocupação](figs/exp1_mapa_ocupacao.png) | ![Mapa da menor energia](figs/exp1_mapa_menor_energia.png) |
+
+A configuração de menor energia esteve no menor kT em 52 % do tempo, no segundo estado em 25 % e nos demais no restante, o que reflete a sobreposição das P(U).
 
 **Conclusão**: a escada mistura bem, mas está mais densa do que o necessário.
 
@@ -588,10 +598,13 @@ Uma tabela para anotar os resultados:
 
 **Configuração**: como o experimento 1, mas com réplicas 3 (clique em "Gerar escada geométrica" de novo). Repita com réplicas 2.
 
-**Esperado**
-- Os histogramas P(U) de vizinhos se sobrepõem menos.
-- A taxa de troca cai em todos os pares.
-- Com 2 réplicas, as trocas ficam raras e o random walk mostra longos trechos sem cruzamento.
+**Esperado com 3 réplicas**: histogramas P(U) de vizinhos menos sobrepostos e taxa de troca menor em todos os pares.
+
+**Observado com 2 réplicas**: os dois histogramas ficam bem separados e só se cruzam numa faixa estreita de energia; o random walk mostra longos trechos sem troca, intercalados com sequências curtas de trocas.
+
+![P(U) com 2 réplicas](figs/exp2_P_U_2replicas.png)
+
+![Random walk com 2 réplicas](figs/exp2_random_walk_2replicas.png)
 
 **Pergunta**: qual número de réplicas coloca a taxa de troca perto de 0,2 a 0,3 nessa faixa?
 
@@ -633,7 +646,7 @@ Uma tabela para anotar os resultados:
 
 **Esperado**: taxa de troca mais uniforme e mais round trips com o mesmo custo.
 
-**Como iterar**: rode, veja qual par ficou pior, aproxime esse par, repita. Duas ou três rodadas costumam bastar. Esse procedimento manual é a versão simples dos métodos de otimização de escada da literatura (Katzgraber et al., 2006).
+**Procedimento**: rodar, identificar o par com a menor taxa, aproximar as duas temperaturas desse par e repetir. Métodos sistemáticos para otimizar a escada são descritos na literatura (por exemplo, Katzgraber et al., 2006).
 
 ### Experimento 6: frequência de troca
 
@@ -643,7 +656,7 @@ Uma tabela para anotar os resultados:
 
 **Esperado**
 - A taxa de troca (fração aceita) fica parecida nos três casos.
-- O número de tentativas é 2000, 400 e 40, respectivamente.
+- O número de rodadas de tentativas é 2000, 400 e 40, respectivamente (cada par é testado em metade delas).
 - O número de round trips cai fortemente com o intervalo maior.
 
 **Conclusão**: para o mesmo custo, trocar com mais frequência entrega mais configurações à réplica de referência.
@@ -688,13 +701,20 @@ Se o par 3-4 ainda trocar bastante, aumente o buraco (por exemplo, 0.55, 0.57, 0
 - Mas no painel do maior kT os aglomerados persistem: o topo não é quente o bastante para desfazê-los.
 - As configurações que chegam à réplica de referência são parecidas com as que já estavam lá.
 
-**Conclusão**: o diagnóstico tem duas camadas. Primeiro, a escada mistura? Segundo, o topo descorrelaciona o grau de liberdade lento? A segunda pergunta não é respondida pela taxa de troca.
+**Conclusão**: a avaliação tem duas etapas. A primeira é verificar se a escada mistura. A segunda é verificar se a temperatura máxima é suficiente para descorrelacionar o grau de liberdade lento. A taxa de troca e os round trips respondem apenas à primeira.
 
 ## 10. Diagnóstico: do sintoma ao parâmetro
 
-Siga esta ordem ao avaliar uma corrida de REMD.
+As tabelas abaixo relacionam cada sintoma ao parâmetro que deve ser alterado. A ordem sugerida é: preparação, mistura na escada e temperatura máxima.
 
-**Camada 1: a escada mistura?**
+**Etapa 1: a preparação está correta?**
+
+| Sintoma | Onde aparece | O que variar |
+| --- | --- | --- |
+| Curvas de energia ainda derivando no passo 0 | Gráfico de energia, parte negativa | Aumentar a equilibração |
+| Taxa de troca muda muito no início da corrida | Texto de estatísticas | Mesmo; descartar o início |
+
+**Etapa 2: a escada mistura?**
 
 | Sintoma | Onde aparece na GUI | Causa provável | O que variar |
 | --- | --- | --- | --- |
@@ -705,19 +725,12 @@ Siga esta ordem ao avaliar uma corrida de REMD.
 | Poucos round trips com taxa de troca razoável | Contador de round trips; random walk lento | Poucas tentativas, ou réplicas demais para percorrer | Diminuir "troca a cada"; rodar mais; reduzir réplicas se a taxa permitir |
 | Round trips muito desiguais entre walkers | "por walker" no texto de estatísticas | Corrida curta, ou um walker preso | Rodar mais; conferir equilibração |
 
-**Camada 2: o topo cruza as barreiras?**
+**Etapa 3: a temperatura máxima é suficiente?**
 
 | Sintoma | Onde aparece | Causa provável | O que variar |
 | --- | --- | --- | --- |
 | Mistura boa, mas a réplica de referência não muda | Painel do maior kT com aglomerados persistentes | kT máx baixo demais | Aumentar kT máx (e réplicas, para manter a taxa) |
 | Energia de um painel quente dispara | Título do painel; gráfico de energia | dt grande demais para a réplica quente | Reduzir dt |
-
-**Camada 0: a preparação está correta?**
-
-| Sintoma | Onde aparece | O que variar |
-| --- | --- | --- |
-| Curvas de energia ainda derivando no passo 0 | Gráfico de energia, parte negativa | Aumentar a equilibração |
-| Taxa de troca muda muito no início da corrida | Texto de estatísticas | Mesmo; descartar o início |
 
 ## 11. Da GUI para uma simulação molecular
 
@@ -734,7 +747,7 @@ Os parâmetros da GUI têm equivalentes diretos em pacotes de dinâmica molecula
 | Random walk dos walkers | Índices de réplica ao longo do tempo | Linhas "Repl ex" do log; `demux.pl` |
 | Trajetória do menor kT | Trajetória do diretório de menor temperatura | `0/*.xtc`, contínuo no estado |
 
-**O custo do solvente.** O argumento da seção 8.1 diz que o número de réplicas cresce com √n, e n conta todos os átomos. Num peptídeo solvatado, a maior parte dos átomos é água, e é ela que estreita o espaçamento permitido. Cobrir de 300 K a 600 K com taxa de troca de 0,2 a 0,3 costuma exigir dezenas de réplicas mesmo para sistemas pequenos.
+**O custo do solvente.** Pelo argumento da seção 8.1, o número de réplicas cresce com √n, e n inclui todos os átomos. Num peptídeo solvatado, a maior parte dos átomos é água, e é ela que limita o espaçamento entre temperaturas. Por isso o T-REMD em solvente explícito exige muitas réplicas mesmo para solutos pequenos.
 
 **A saída: REST2.** No *Replica Exchange with Solute Tempering* (Wang, Friesner e Berne, 2011), todas as réplicas ficam na mesma temperatura, e o que varia é o Hamiltoniano: só as interações do soluto são escaladas, como se apenas ele fosse aquecido. A diferença de energia entre réplicas passa a vir só dos átomos do soluto, e poucas réplicas bastam. Os conceitos deste tutorial (sobreposição, taxa de troca, round trips, gargalo, topo quente o bastante) valem igualmente; muda apenas o que é a "escada".
 
@@ -786,7 +799,7 @@ vmd -e remd_traj_….tcl
 
 Abrir o `.xyz` diretamente também funciona; nesse caso, em Graphics → Representations, troque o Drawing Method para VDW.
 
-**Como interpretar a trajetória.** Ela é contínua no **estado**: mostra sempre o que estava em kT mín. A cada troca aceita no par mais frio, as posições saltam, porque outra configuração assumiu o lugar. Esses saltos não são erro; são o REMD funcionando. As médias calculadas sobre essa trajetória são médias canônicas em kT mín.
+**Como interpretar a trajetória.** Ela é contínua no **estado**: mostra sempre o que estava em kT mín. A cada troca aceita no par mais frio, as posições saltam, porque outra configuração assumiu o lugar. Esses saltos são esperados. As médias calculadas sobre essa trajetória são médias canônicas em kT mín.
 
 Reset ou uma nova equilibração apagam os frames acumulados. O limite é de 50 000 frames.
 
@@ -802,12 +815,11 @@ Reset ou uma nova equilibração apagam os frames acumulados. O limite é de 50 
 | A energia de um painel vai para valores enormes | dt grande demais para aquela temperatura. Reduza dt e refaça a partir do botão 1 |
 | A simulação está muito lenta | Coloque 0 em "pausa se trocou"; reduza n; confira se abriu com `-t auto` |
 | Parte da janela fica cortada | Maximize ou redimensione a janela; os gráficos acompanham |
-| O `.tcl` não desenha a caixa no VMD | As partículas carregam mesmo assim; o comando `pbc box` depende do plugin PBCTools |
 | O número de round trips é zero | A corrida é curta, ou há um gargalo. Veja o mapa "Taxa de troca (kT)" |
 
 ## 14. Limitações do modelo
 
-- **É um modelo didático.** Um gás de Lennard-Jones diluído em 2D não tem barreiras tão altas quanto as de uma biomolécula. O ganho de amostragem do REMD existe, mas é menos dramático do que em sistemas reais.
+- **É um modelo didático.** Um gás de Lennard-Jones diluído em 2D não tem barreiras tão altas quanto as de uma biomolécula, e o ganho de amostragem com o REMD é menor do que em sistemas reais.
 - **A GUI mostra a mecânica do método, não o ganho final.** Os painéis diagnosticam a mistura na escada. Não há, na versão atual, um observável estrutural comparando a réplica de referência com e sem trocas.
 - **Custo O(n²).** Sem raio de corte nem lista de vizinhos, sistemas com mais de algumas centenas de partículas ficam lentos.
 - **Estatística curta.** Corridas de 20 000 passos dão algumas centenas de tentativas por par. As taxas de troca têm incerteza de alguns centésimos, e os mapas por walker têm mais ruído ainda. Diferenças pequenas entre corridas podem ser apenas flutuação; repita com outra semente antes de concluir.
@@ -858,4 +870,3 @@ Reset ou uma nova equilibração apagam os frames acumulados. O limite é de 50 
 
 **Material relacionado**
 - FundamentosDMC.jl, material didático de simulações de dinâmica molecular que inspirou a interface.
-- Para uma referência rápida de cada campo da GUI, veja [guia_parametros.md](guia_parametros.md).
