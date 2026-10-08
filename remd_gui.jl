@@ -198,7 +198,7 @@ function settext!(tb, s::String)
 end
 
 const PALETTES = Dict(
-    "Destaque (Resto Cinza)" => [RGBf(0.9, 0.1, 0.1); fill(RGBf(0.65, 0.65, 0.65), MAXREP - 1)],
+    "Destaque (demais em cinza)" => [RGBf(0.9, 0.1, 0.1); fill(RGBf(0.65, 0.65, 0.65), MAXREP - 1)],
     "Colorido" => [
         RGBf(0.95, 0.1, 0.1), RGBf(0.1, 0.5, 0.8), RGBf(0.2, 0.7, 0.2), RGBf(0.9, 0.6, 0.1),
         RGBf(0.6, 0.3, 0.8), RGBf(0.2, 0.8, 0.8), RGBf(0.9, 0.3, 0.6), RGBf(0.4, 0.4, 0.4),
@@ -232,11 +232,11 @@ function remd_gui()   # se ainda cortar: redimensione a janela ou edite o tamanh
         return Textbox(left[row[], 2]; stored_string=default, width=125, height=25, fontsize=13.5, textpadding=(7, 7, 3, 3))
     end
     tb_nrep = field("réplicas (máx $MAXREP)", "6")
-    tb_kmin = field("kT mín (em epsilon)", "0.35")
+    tb_kmin = field("kT mín (em epsilon)", "0.55")
     tb_kmax = field("kT máx (em epsilon)", "0.86")
     row[] += 1
     btn_ladder = Button(left[row[], 1:2]; label="Gerar escada geométrica", height=27, fontsize=13.5)
-    tb_kts = field("kTs", "0.35,0.42,0.50,0.60,0.72,0.86")
+    tb_kts = field("kTs", "0.550,0.601,0.658,0.719,0.786,0.860")
     tb_n = field("n partículas", "100")
     tb_L = field("L (caixa)", "100.0")
     tb_dt = field("dt", "0.05")
@@ -253,7 +253,7 @@ function remd_gui()   # se ainda cortar: redimensione a janela ou edite o tamanh
     menu_teste = Menu(left[row[], 2]; options=first.(TESTES), default="(escolher)", height=27, fontsize=13.5, width=145)
     row[] += 1
     Label(left[row[], 1], "Cores"; halign=:right, fontsize=13.5)
-    menu_cores = Menu(left[row[], 2]; options=["Destaque (Resto Cinza)", "Colorido"], default="Destaque (Resto Cinza)", height=27, fontsize=13.5, width=145)
+    menu_cores = Menu(left[row[], 2]; options=["Destaque (demais em cinza)", "Colorido"], default="Destaque (demais em cinza)", height=27, fontsize=13.5, width=145)
     row[] += 1
     Label(left[row[], 1], "Mapa"; halign=:right, fontsize=13.5)
     menu_map = Menu(left[row[], 2]; options=["Ocupação", "Menor energia", "Taxa de troca (kT)", "Trocas entre walkers"], default="Ocupação", height=27, fontsize=13.5, width=145)
@@ -271,12 +271,12 @@ function remd_gui()   # se ainda cortar: redimensione a janela ou edite o tamanh
     btn_traj = Button(bl[4, 1:3]; label="Salvar trajetória do menor kT (XYZ)", buttoncolor=RGBf(0.75, 0.85, 0.95), bk...)
     rowgap!(bl, 4); colgap!(bl, 4)
     row[] += 1
-    stats = Observable("Aceitação: —")
+    stats = Observable("Taxa de troca: —")
     Label(left[row[], 1:2], stats; halign=:left, valign=:top, justification=:left, tellwidth=false, tellheight=false, fontsize=12.5)   # última linha absorve a sobra
     rowgap!(left, 4)
 
     # ---------------- centro: random walk, energia, histogramas, réplica de referência e mapa ----------------
-    ax_W = Axis(center[1, 1:2]; title="Random walk das configurações", xlabel="tentativa de troca", ylabel="índice do kT (1 = menor)")
+    ax_W = Axis(center[1, 1:2]; title="Random walk das configurações", xlabel="rodada de tentativas de troca", ylabel="índice do kT (1 = menor)")
     ax_E = Axis(center[2, 1]; title="Energia potencial por réplica (média móvel)", xlabel="passo (< 0 = equilibração)", ylabel="U (unidades de epsilon)")
     ax_H = Axis(center[2, 2]; title="P(U) por réplica (azul = menor kT, vermelho = maior kT)", xlabel="U (unidades de epsilon)", ylabel="P(U)")
     ax_main = Axis(center[3, 1]; aspect=DataAspect(), title="Réplica de referência (menor kT)", xticklabelsvisible=false, yticklabelsvisible=false)
@@ -294,16 +294,21 @@ function remd_gui()   # se ainda cortar: redimensione a janela ou edite o tamanh
     lw_e = [Observable(k == 1 ? 2.8 : 1.2) for k in 1:MAXREP]
     line_cols = [Observable(RGBf(0, 0, 0)) for _ in 1:MAXREP]
     lw_lines = [Observable(1.5) for _ in 1:MAXREP]
+    alpha_W = Observable(0.85)                 # opacidade das linhas do random walk
     for k in MAXREP:-1:1
         lines!(ax_E, epts[k]; color=tcols[k], linewidth=lw_e[k])   # menor kT desenhado por último (fica por cima)
-        lines!(ax_W, wpts[k]; color=line_cols[k], linewidth=lw_lines[k], alpha=0.85)
+        lines!(ax_W, wpts[k]; color=line_cols[k], linewidth=lw_lines[k], alpha=alpha_W)
         lines!(ax_H, hpts[k]; color=tcols[k], linewidth=lw_e[k])
     end
 
     # rastreio da configuração de menor U: em qual kT ela está a cada tentativa de troca (pontos magenta, opcionais)
     minpts = Observable(Point2f[])
     COR_MENOR_U = RGBf(0.85, 0.0, 0.75)   # magenta: cor que não aparece na paleta dos walkers
-    scatter!(ax_W, minpts; color=COR_MENOR_U, markersize=7, strokewidth=0, visible=tg_min.active)
+    scatter!(ax_W, minpts; color=COR_MENOR_U, markersize=8, strokewidth=0, visible=tg_min.active)
+    # com a chave ligada, as linhas dos walkers ficam claras para destacar os pontos da menor U
+    on(tg_min.active) do ativo
+        alpha_W[] = ativo ? 0.2 : 0.85
+    end
 
     # mapa de ocupação: occ[estado, walker] = fração do tempo; NaN = célula não usada
     vlines!(ax_E, [0.0]; color=:gray40, linestyle=:dash, linewidth=1.5)   # fim da equilibração
@@ -329,7 +334,7 @@ function remd_gui()   # se ainda cortar: redimensione a janela ou edite o tamanh
     busy = Ref(false)           # há uma tarefa de simulação ativa
     lastflag = fill("", MAXREP)
     xrng = MersenneTwister(1234)
-    current_colors = Observable(PALETTES["Destaque (Resto Cinza)"])
+    current_colors = Observable(PALETTES["Destaque (demais em cinza)"])
     Uh = [Float64[] for _ in 1:MAXREP]     # amostras de U por estado (para P(U))
     occ_count = zeros(Int, MAXREP, MAXREP)  # [estado, walker]: nº de registros
     swap_count = zeros(Int, MAXREP, MAXREP) # [walker a, walker b]: trocas aceitas entre os dois
@@ -467,7 +472,7 @@ function remd_gui()   # se ainda cortar: redimensione a janela ou edite o tamanh
         s = sim[]
         for k in eachindex(s.reps)
             U = s.reps[k].U
-            Usm[k] = isnan(Usm[k]) ? U : 0.9 * Usm[k] + 0.1 * U     # janela ~10 registros (100 passos)
+            Usm[k] = isnan(Usm[k]) ? U : 0.9 * Usm[k] + 0.1 * U     # janela de ~10 registros (100 passos no Run; 200 na equilibração)
             v = epts[k][]
             push!(v, Point2f(s.step, Usm[k])); trim!(v, 4000)
             if collect
@@ -544,7 +549,7 @@ function remd_gui()   # se ainda cortar: redimensione a janela ou edite o tamanh
             tcols[k][] = tempcolor(min(k, R), R)
             lw_e[k][] = (k == 1 || k == R) ? 3.0 : 1.3      # extremos (menor e maior kT) em destaque
         end
-        stats[] = "Aceitação: —"
+        stats[] = "Taxa de troca: —"
         record_walk()
         update_plots()
         logtext[] = "Reset: $R réplicas criadas (semente $seed). Clique em '1. Minimizar + Equilibrar'."
@@ -725,7 +730,7 @@ function remd_gui()   # se ainda cortar: redimensione a janela ou edite o tamanh
             crop_save(joinpath(dir, "random_walk.png"), img, [ax_W])
             crop_save(joinpath(dir, "energia.png"), img, [ax_E])
             crop_save(joinpath(dir, "P_U.png"), img, [ax_H])
-            crop_save(joinpath(dir, "replica_principal.png"), img, [ax_main])
+            crop_save(joinpath(dir, "replica_referencia.png"), img, [ax_main])
             crop_save(joinpath(dir, "replicas.png"), img, axs)
             old = map_mode[]                                   # um PNG para cada opção do seletor "Mapa"
             for (mode, tag) in (("Ocupação", "ocupacao"), ("Menor energia", "menor_energia"),

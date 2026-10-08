@@ -79,7 +79,7 @@ P = \min\left\{1,\ \exp\left[\left(\frac{1}{kT_i}-\frac{1}{kT_j}\right)\left(U_i
 
 ## Limitações
 
-- O cálculo de forças é O(N²); acima de algumas centenas de partículas a simulação fica lenta.
+- O cálculo de forças é O(n²), em que n é o número de partículas; acima de algumas centenas de partículas a simulação fica lenta.
 - É uma ferramenta didática, não um código de produção.
 
 ## Autores

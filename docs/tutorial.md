@@ -49,7 +49,7 @@ Aumentar a temperatura resolve a barreira (τ cai exponencialmente), mas então 
 
 ## 2. A ideia do método
 
-Simulam-se R cópias independentes do mesmo sistema, chamadas **réplicas**, cada uma numa temperatura diferente: T₁ < T₂ < … < T_R. O conjunto das temperaturas é a **escada**.
+Simulam-se R cópias do mesmo sistema, chamadas **réplicas**, cada uma numa temperatura diferente: T₁ < T₂ < … < T_R. O conjunto das temperaturas é a **escada**.
 
 - A réplica em T₁ é a de interesse (a **réplica de referência**).
 - As réplicas em temperaturas altas cruzam barreiras com facilidade.
@@ -149,7 +149,7 @@ U(r) = 4\,\varepsilon\left[\left(\frac{\sigma}{r}\right)^{12} - \left(\frac{\sig
 - ε (epsilon) é a profundidade do poço: a energia ganha quando duas partículas ficam na distância ideal.
 - σ (sigma) é o diâmetro efetivo da partícula. O mínimo do potencial fica em r = 2^(1/6) σ ≈ 1,12 σ.
 
-Não há raio de corte: todos os pares entram na soma, usando a imagem periódica mais próxima. Isso torna o cálculo lento para muitas partículas (custo proporcional a n²), mas garante que a energia usada no critério de troca é exata.
+Não há raio de corte: todos os pares entram na soma, usando a imagem periódica mais próxima (convenção da imagem mínima). Isso torna o cálculo lento para muitas partículas (custo proporcional a n²), mas evita os artefatos de truncamento do potencial na energia usada no critério de troca. Como L é muito maior que σ, a contribuição das demais imagens é desprezível.
 
 ### 4.2 Unidades
 
@@ -161,6 +161,7 @@ A GUI usa unidades reduzidas:
 | Energia | ε (com o padrão ε = 1, os números da tela já estão em unidades de ε) |
 | Temperatura | dada como kT, em unidades de energia. kT = 0,5 significa T = 0,5 ε/k_B |
 | Comprimento | arbitrária; com o padrão, σ = 2 e L = 100 |
+| Tempo | derivada das anteriores: (unidade de comprimento) × √(massa/ε). dt e 1/gamma estão nessa unidade |
 
 Com os valores padrão (n = 100, L = 100, σ = 2), as partículas ocupam cerca de 3 % da área da caixa. O sistema é **diluído**.
 
@@ -241,9 +242,9 @@ A janela tem três colunas: controles à esquerda, gráficos no centro e réplic
 | Campo | Padrão | Significado |
 | --- | --- | --- |
 | réplicas (máx 12) | 6 | Número de temperaturas, usado pelo botão "Gerar escada geométrica" |
-| kT mín (em epsilon) | 0,35 | Menor temperatura, usada pelo mesmo botão |
+| kT mín (em epsilon) | 0,55 | Menor temperatura, usada pelo mesmo botão |
 | kT máx (em epsilon) | 0,86 | Maior temperatura, usada pelo mesmo botão |
-| kTs | 0.35,0.42,0.50,0.60,0.72,0.86 | A lista de temperaturas que a simulação usa de fato, separadas por vírgula |
+| kTs | 0.550,0.601,0.658,0.719,0.786,0.860 | A lista de temperaturas que a simulação usa de fato, separadas por vírgula |
 | n partículas | 100 | Número de partículas em cada réplica |
 | L (caixa) | 100 | Lado da caixa quadrada |
 | dt | 0,05 | Passo de integração |
@@ -271,9 +272,9 @@ A janela tem três colunas: controles à esquerda, gráficos no centro e réplic
 | Controle | Opções | Função |
 | --- | --- | --- |
 | Teste | "1: referência" a "9: faixa fria" | Preenche os campos com a configuração de um teste da seção 9 (seção 9) |
-| Cores | "Destaque (Resto Cinza)" / "Colorido" | Como os walkers são pintados (seção 6.4) |
+| Cores | "Destaque (demais em cinza)" / "Colorido" | Como os walkers são pintados (seção 6.4) |
 | Mapa | "Ocupação" / "Menor energia" / "Taxa de troca (kT)" / "Trocas entre walkers" | Qual mapa aparece no painel inferior direito do centro (seção 6.3) |
-| menor U no random walk | ligado / desligado | Mostra, no random walk, em que kT estava a configuração de menor energia |
+| menor U no random walk | ligado / desligado | Mostra, no random walk, em que kT estava a configuração de menor energia; com a chave ligada, as linhas dos walkers ficam mais claras para destacar esses pontos |
 
 **Botões**
 
@@ -306,20 +307,20 @@ Um painel por estado, do menor kT (primeiro) ao maior (último). O título de ca
 - `kT=…`: a temperatura do estado (fixa).
 - `U=…`: a energia potencial da configuração que está ali agora.
 - `P(->)=…`: a probabilidade calculada na última tentativa de troca com o próximo estado.
-- `Trocou` em verde ou `Falhou` em vermelho: o resultado da última tentativa de que esse estado participou.
+- `Trocou` em verde ou `Falhou` em vermelho: o resultado da tentativa da rodada mais recente. Como os pares alternam, um estado que não participou dessa rodada fica sem essa indicação.
 
 Um dos painéis tem **moldura magenta grossa**: é o estado que contém, naquele instante, a configuração de menor energia potencial entre todas.
 
 ### 6.3 Coluna central: os gráficos
 
-**Random walk das configurações** (topo). Eixo x: número da tentativa de troca. Eixo y: índice do estado (1 = menor kT). Há uma linha por walker, mostrando em que estado ele estava a cada tentativa. É o gráfico mais importante para julgar a mistura.
+**Random walk das configurações** (topo). Eixo x: número da rodada de tentativas de troca. Eixo y: índice do estado (1 = menor kT). Há uma linha por walker, mostrando em que estado ele estava a cada tentativa. É o gráfico mais importante para julgar a mistura.
 
 **Energia potencial por réplica** (meio, esquerda). Uma curva por estado, de azul (menor kT) a vermelho (maior kT). Mostra a média móvel da energia, para suavizar o ruído.
 - Passos negativos são a equilibração; a linha tracejada vertical em 0 marca o início das trocas.
 - As curvas dos dois extremos são mais grossas.
 - O título mostra a média de U no menor e no maior kT.
 
-**P(U) por réplica** (meio, direita). Um histograma de energia potencial por estado, com as mesmas cores. É acumulado apenas durante o Run. Mostra diretamente a sobreposição que controla a aceitação.
+**P(U) por réplica** (meio, direita). Um histograma de energia potencial por estado, com as mesmas cores. É acumulado apenas durante o Run. Mostra diretamente a sobreposição que controla a taxa de troca.
 
 **Réplica de referência** (embaixo, esquerda). Uma visão ampliada do estado de menor kT. O título diz qual walker está lá e sua energia.
 
@@ -336,7 +337,7 @@ No mapa "Taxa de troca (kT)", só as células vizinhas à diagonal ficam preench
 
 ### 6.4 Cores
 
-- **Destaque (Resto Cinza)**: o walker 1 (a configuração que começou no menor kT) é vermelho e os demais são cinza. Serve para seguir uma única configuração pela escada.
+- **Destaque (demais em cinza)**: o walker 1 (a configuração que começou no menor kT) é vermelho e os demais são cinza. Serve para seguir uma única configuração pela escada.
 - **Colorido**: cada walker tem sua cor. Serve para ver todas as trocas.
 
 No random walk, a linha do walker 1 é sempre mais grossa.
@@ -349,13 +350,14 @@ A linha inferior mostra o que a GUI está fazendo ("Minimizando...", "Rodando RE
 
 O objetivo aqui é só aprender a operar a GUI e a ler a tela. Use os valores abaixo.
 
-**Passo 1. Defina a escada.** Preencha:
+**Passo 1. Confira a escada.** Os valores padrão já correspondem ao teste 1:
 
 - réplicas: `6`
 - kT mín: `0.55`
 - kT máx: `0.86`
+- kTs: `0.550,0.601,0.658,0.719,0.786,0.860`
 
-Clique em **Gerar escada geométrica**. O campo kTs deve passar a mostrar seis valores, de 0.550 a 0.860.
+Se tiver alterado algum desses campos, refaça-os e clique em **Gerar escada geométrica**.
 
 **Passo 2. Fixe a semente.** No campo semente, digite `42`. Com a semente fixa, a simulação pode ser repetida.
 
@@ -571,7 +573,7 @@ Uma tabela para anotar os resultados:
 
 **Objetivo**: ter uma corrida de comparação e aprender a ler os painéis.
 
-**Configuração**: réplicas 6, kT mín 0.55, kT máx 0.86, "Gerar escada geométrica"; demais campos no padrão; nsteps 20000.
+**Configuração**: réplicas 6, kT de 0,55 a 0,86 em escada geométrica; demais campos no padrão; nsteps 20000.
 
 **O que olhar**
 - Random walk: todas as cores percorrem os seis níveis?
@@ -745,8 +747,8 @@ Os parâmetros da GUI têm equivalentes diretos em pacotes de dinâmica molecula
 | gamma (atrito) | Acoplamento do termostato | `tau-t` (com o integrador `sd`, o atrito é 1/`tau-t`) |
 | equilibração | Equilibrar cada réplica na sua temperatura antes das trocas | NVT/NPT por réplica |
 | n partículas | Número total de átomos, **incluindo o solvente** | — |
-| Random walk dos walkers | Índices de réplica ao longo do tempo | Linhas "Repl ex" do log; `demux.pl` |
-| Trajetória do menor kT | Trajetória do diretório de menor temperatura | `0/*.xtc`, contínuo no estado |
+| Random walk dos walkers | Índices de réplica ao longo do tempo | Linhas "Repl ex" do log; script `demux.pl` (no diretório `scripts/` do código-fonte) com `gmx trjcat -demux` |
+| Trajetória do menor kT | Trajetória do diretório de menor temperatura | Arquivo `.xtc` desse diretório, contínuo no estado |
 
 **O custo do solvente.** Pelo argumento da seção 8.1, o número de réplicas cresce com √n, e n inclui todos os átomos. Num peptídeo solvatado, a maior parte dos átomos é água, e é ela que limita o espaçamento entre temperaturas. Por isso o T-REMD em solvente explícito exige muitas réplicas mesmo para solutos pequenos.
 
@@ -775,7 +777,7 @@ contendo:
 | `random_walk.png` | Random walk das configurações |
 | `energia.png` | Energia potencial por réplica |
 | `P_U.png` | Histogramas P(U) |
-| `replica_principal.png` | Réplica de referência |
+| `replica_referencia.png` | Réplica de referência |
 | `replicas.png` | Todos os painéis de réplicas |
 | `mapa_ocupacao.png` | Mapa de ocupação |
 | `mapa_menor_energia.png` | Mapa da menor energia |
@@ -835,7 +837,7 @@ Reset ou uma nova equilibração apagam os frames acumulados. O limite é de 50 
 | Walker | Uma configuração (posições e velocidades) que migra entre estados |
 | Escada | O conjunto das temperaturas |
 | Réplica de referência | O estado de menor kT, o de interesse |
-| Taxa de troca (P_acc) | Fração das tentativas de troca aceitas em um par de estados vizinhos |
+| Taxa de troca (P_acc) | Fração das tentativas de troca aceitas em um par de estados vizinhos; também chamada de taxa de aceitação |
 | P(U) | Distribuição da energia potencial em um estado |
 | Sobreposição | Região de energias que dois estados vizinhos visitam em comum |
 | Random walk | O passeio de um walker pelos estados ao longo das trocas |
@@ -850,24 +852,24 @@ Reset ou uma nova equilibração apagam os frames acumulados. O limite é de 50 
 ## 16. Referências
 
 **O método**
-- Hukushima, K.; Nemoto, K. Exchange Monte Carlo method and application to spin glass simulations. *J. Phys. Soc. Jpn.* **65**, 1604 (1996).
-- Sugita, Y.; Okamoto, Y. Replica-exchange molecular dynamics method for protein folding. *Chem. Phys. Lett.* **314**, 141 (1999).
-- Earl, D. J.; Deem, M. W. Parallel tempering: theory, applications, and new perspectives. *Phys. Chem. Chem. Phys.* **7**, 3910 (2005).
+- Hukushima, K.; Nemoto, K. Exchange Monte Carlo method and application to spin glass simulations. *J. Phys. Soc. Jpn.* **65**, 1604 (1996). doi:10.1143/JPSJ.65.1604
+- Sugita, Y.; Okamoto, Y. Replica-exchange molecular dynamics method for protein folding. *Chem. Phys. Lett.* **314**, 141 (1999). doi:10.1016/S0009-2614(99)01123-9
+- Earl, D. J.; Deem, M. W. Parallel tempering: theory, applications, and new perspectives. *Phys. Chem. Chem. Phys.* **7**, 3910 (2005). doi:10.1039/B509983H
 
 **Escolha da escada e taxa de troca**
-- Kofke, D. A. On the acceptance probability of replica-exchange Monte Carlo trials. *J. Chem. Phys.* **117**, 6911 (2002).
-- Rathore, N.; Chopra, M.; de Pablo, J. J. Optimal allocation of replicas in parallel tempering simulations. *J. Chem. Phys.* **122**, 024111 (2005).
-- Katzgraber, H. G.; Trebst, S.; Huse, D. A.; Troyer, M. Feedback-optimized parallel tempering Monte Carlo. *J. Stat. Mech.* P03018 (2006).
-- Patriksson, A.; van der Spoel, D. A temperature predictor for parallel tempering simulations. *Phys. Chem. Chem. Phys.* **10**, 2073 (2008).
+- Kofke, D. A. On the acceptance probability of replica-exchange Monte Carlo trials. *J. Chem. Phys.* **117**, 6911 (2002). doi:10.1063/1.1507776. Errata: *J. Chem. Phys.* **120**, 10852 (2004).
+- Rathore, N.; Chopra, M.; de Pablo, J. J. Optimal allocation of replicas in parallel tempering simulations. *J. Chem. Phys.* **122**, 024111 (2005). doi:10.1063/1.1831273
+- Katzgraber, H. G.; Trebst, S.; Huse, D. A.; Troyer, M. Feedback-optimized parallel tempering Monte Carlo. *J. Stat. Mech.: Theory Exp.* (2006) P03018. doi:10.1088/1742-5468/2006/03/P03018
+- Patriksson, A.; van der Spoel, D. A temperature predictor for parallel tempering simulations. *Phys. Chem. Chem. Phys.* **10**, 2073 (2008). doi:10.1039/B716554D
 
 **Frequência de troca**
-- Sindhikara, D.; Meng, Y.; Roitberg, A. E. Exchange frequency in replica exchange molecular dynamics. *J. Chem. Phys.* **128**, 024103 (2008).
+- Sindhikara, D.; Meng, Y.; Roitberg, A. E. Exchange frequency in replica exchange molecular dynamics. *J. Chem. Phys.* **128**, 024103 (2008). doi:10.1063/1.2816560
 
 **Variantes**
-- Wang, L.; Friesner, R. A.; Berne, B. J. Replica exchange with solute scaling: a more efficient version of replica exchange with solute tempering (REST2). *J. Phys. Chem. B* **115**, 9431 (2011).
+- Wang, L.; Friesner, R. A.; Berne, B. J. Replica exchange with solute scaling: a more efficient version of replica exchange with solute tempering (REST2). *J. Phys. Chem. B* **115**, 9431 (2011). doi:10.1021/jp204407d
 
 **Integrador**
-- Leimkuhler, B.; Matthews, C. Rational construction of stochastic numerical methods for molecular sampling. *Appl. Math. Res. eXpress* **2013**, 34 (2013).
+- Leimkuhler, B.; Matthews, C. Rational construction of stochastic numerical methods for molecular sampling. *Appl. Math. Res. eXpress* **2013**, 34–56 (2013). doi:10.1093/amrx/abs010
 
 **Material relacionado**
-- FundamentosDMC.jl, material didático de simulações de dinâmica molecular que inspirou a interface.
+- Martínez, L. FundamentosDMC.jl: material didático sobre simulações de dinâmica molecular, que inspirou a interface. https://github.com/m3g/FundamentosDMC.jl
