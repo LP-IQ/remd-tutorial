@@ -12,7 +12,7 @@ Os tópicos são:
 
 Pré-requisitos: noções de dinâmica molecular (integração, termostato, energia potencial) e do ensemble canônico. Não é preciso conhecer Julia.
 
-Nos experimentos da seção 9, os resultados marcados como *observado* foram obtidos em corridas com a GUI. Os marcados como *esperado* são previsões que devem ser conferidas; os valores numéricos variam com a semente e com a duração da corrida.
+Nos testes da seção 9, os resultados marcados como *observado* foram obtidos em corridas com a GUI. Os marcados como *esperado* são previsões que devem ser conferidas; os valores numéricos variam com a semente e com a duração da corrida.
 
 ## Sumário
 
@@ -24,7 +24,7 @@ Nos experimentos da seção 9, os resultados marcados como *observado* foram obt
 6. [Visita guiada à janela](#6-visita-guiada-à-janela)
 7. [Primeira simulação, passo a passo](#7-primeira-simulação-passo-a-passo)
 8. [Os parâmetros de controle](#8-os-parâmetros-de-controle)
-9. [Experimentos](#9-experimentos)
+9. [Testes](#9-testes)
 10. [Diagnóstico: do sintoma ao parâmetro](#10-diagnóstico-do-sintoma-ao-parâmetro)
 11. [Da GUI para uma simulação molecular](#11-da-gui-para-uma-simulação-molecular)
 12. [Salvando figuras e trajetórias](#12-salvando-figuras-e-trajetórias)
@@ -232,7 +232,7 @@ Se a janela abrir mostrando os painéis com as partículas espalhadas, a instala
 
 A janela tem três colunas: controles à esquerda, gráficos no centro e réplicas à direita. Há ainda uma linha de mensagens no rodapé.
 
-![Janela da GUI ao fim de uma corrida com 6 réplicas](figs/exp1_janela.png)
+![Janela da GUI ao fim de uma corrida com 6 réplicas](figs/teste1_janela.png)
 
 ### 6.1 Coluna da esquerda: controles
 
@@ -270,6 +270,7 @@ A janela tem três colunas: controles à esquerda, gráficos no centro e réplic
 
 | Controle | Opções | Função |
 | --- | --- | --- |
+| Teste | "1: referência" a "9: faixa fria" | Preenche os campos com a configuração de um teste da seção 9 (seção 9) |
 | Cores | "Destaque (Resto Cinza)" / "Colorido" | Como os walkers são pintados (seção 6.4) |
 | Mapa | "Ocupação" / "Menor energia" / "Taxa de troca (kT)" / "Trocas entre walkers" | Qual mapa aparece no painel inferior direito do centro (seção 6.3) |
 | menor U no random walk | ligado / desligado | Mostra, no random walk, em que kT estava a configuração de menor energia |
@@ -387,7 +388,7 @@ O que observar, na ordem:
 1. Por que a moldura magenta às vezes sai do primeiro painel?
    *Resposta*: porque as distribuições P(U) se sobrepõem. De vez em quando, uma réplica mais quente tem energia menor que a de referência. É essa mesma sobreposição que permite as trocas.
 2. A taxa de troca está na faixa ideal (0,2 a 0,3)?
-   *Resposta*: não, está acima. A escada tem réplicas sobrando para essa faixa de temperatura. O experimento 2 trata disso.
+   *Resposta*: não, está acima. A escada tem réplicas sobrando para essa faixa de temperatura. O teste 2 trata disso.
 3. Por que a taxa de troca é menor nos pares frios?
    *Resposta*: na região fria os aglomerados se formam, a energia varia mais com a temperatura e as distribuições de vizinhos ficam mais afastadas.
 
@@ -549,24 +550,24 @@ Define as posições iniciais, as velocidades, o ruído do termostato e os sorte
 
 Para comparar dois valores de um parâmetro de forma justa, use a mesma semente nos dois.
 
-## 9. Experimentos
+## 9. Testes
 
-Cada experimento muda **um** parâmetro em relação à referência. Para todos:
+Cada teste muda **um** parâmetro em relação à referência. Para todos:
 
-- Use semente `42` e cores "Colorido".
-- Depois de alterar os campos, clique em **1. Minimizar + Equilibrar** e então em **2. Run**.
+- Selecione o teste no menu **Teste**. Ele preenche todos os campos com os valores abaixo, incluindo semente `42` e pausa `0`, mas não inicia a simulação. Os testes com variantes aparecem separados no menu (por exemplo, "2a: 3 réplicas" e "2b: 2 réplicas"). O teste 5 não tem entrada própria: parte da configuração "4a" com a lista kTs editada à mão.
+- Use cores "Colorido".
+- Clique em **1. Minimizar + Equilibrar** e então em **2. Run**.
 - Ao fim, clique em **Salvar figuras** e anote a taxa de troca por par e os round trips.
-- Para acelerar, coloque `0` em "pausa se trocou".
 
 Uma tabela para anotar os resultados:
 
-| Experimento | Réplicas | kT mín–máx | n | Troca a cada | Taxa de troca (mín–máx) | Round trips | Observações |
+| Teste | Réplicas | kT mín–máx | n | Troca a cada | Taxa de troca (mín–máx) | Round trips | Observações |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | 6 | 0,55–0,86 | 100 | 50 | | | |
 | 2 | 3 | 0,55–0,86 | 100 | 50 | | | |
 | … | | | | | | | |
 
-### Experimento 1: referência
+### Teste 1: referência
 
 **Objetivo**: ter uma corrida de comparação e aprender a ler os painéis.
 
@@ -580,35 +581,35 @@ Uma tabela para anotar os resultados:
 
 **Observado** (uma corrida de 20 000 passos): taxa de troca de 0,63 a 0,80, com o menor valor no par mais frio; 45 round trips; ocupação entre 0,11 e 0,26, em torno do ideal de 0,17.
 
-![P(U) com 6 réplicas](figs/exp1_P_U.png)
+![P(U) com 6 réplicas](figs/teste1_P_U.png)
 
-![Random walk com 6 réplicas](figs/exp1_random_walk.png)
+![Random walk com 6 réplicas](figs/teste1_random_walk.png)
 
 | Taxa de troca | Ocupação | Menor energia |
 | --- | --- | --- |
-| ![Mapa da taxa de troca](figs/exp1_mapa_taxa_de_troca.png) | ![Mapa de ocupação](figs/exp1_mapa_ocupacao.png) | ![Mapa da menor energia](figs/exp1_mapa_menor_energia.png) |
+| ![Mapa da taxa de troca](figs/teste1_mapa_taxa_de_troca.png) | ![Mapa de ocupação](figs/teste1_mapa_ocupacao.png) | ![Mapa da menor energia](figs/teste1_mapa_menor_energia.png) |
 
 A configuração de menor energia esteve no menor kT em 52 % do tempo, no segundo estado em 25 % e nos demais no restante, o que reflete a sobreposição das P(U).
 
 **Conclusão**: a escada mistura bem, mas está mais densa do que o necessário.
 
-### Experimento 2: menos réplicas na mesma faixa
+### Teste 2: menos réplicas na mesma faixa
 
 **Objetivo**: ver que o espaçamento controla a taxa de troca.
 
-**Configuração**: como o experimento 1, mas com réplicas 3 (clique em "Gerar escada geométrica" de novo). Repita com réplicas 2.
+**Configuração**: como o teste 1, mas com réplicas 3 (clique em "Gerar escada geométrica" de novo). Repita com réplicas 2.
 
 **Esperado com 3 réplicas**: histogramas P(U) de vizinhos menos sobrepostos e taxa de troca menor em todos os pares.
 
 **Observado com 2 réplicas**: os dois histogramas ficam bem separados e só se cruzam numa faixa estreita de energia; o random walk mostra longos trechos sem troca, intercalados com sequências curtas de trocas.
 
-![P(U) com 2 réplicas](figs/exp2_P_U_2replicas.png)
+![P(U) com 2 réplicas](figs/teste2_P_U_2replicas.png)
 
-![Random walk com 2 réplicas](figs/exp2_random_walk_2replicas.png)
+![Random walk com 2 réplicas](figs/teste2_random_walk_2replicas.png)
 
 **Pergunta**: qual número de réplicas coloca a taxa de troca perto de 0,2 a 0,3 nessa faixa?
 
-### Experimento 3: faixa larga com poucas réplicas
+### Teste 3: faixa larga com poucas réplicas
 
 **Objetivo**: ver o caso em que o REMD degenera em simulações independentes.
 
@@ -625,11 +626,11 @@ A configuração de menor energia esteve no menor kT em 52 % do tempo, no segund
 
 **Conclusão**: sem sobreposição de energia não há troca, e as R simulações não se ajudam.
 
-### Experimento 4: a mesma faixa com mais réplicas
+### Teste 4: a mesma faixa com mais réplicas
 
 **Objetivo**: recuperar as trocas adicionando réplicas.
 
-**Configuração**: como o experimento 3, com réplicas 8; depois 10.
+**Configuração**: como o teste 3, com réplicas 8; depois 10.
 
 **Esperado**
 - As trocas voltam.
@@ -638,21 +639,21 @@ A configuração de menor energia esteve no menor kT em 52 % do tempo, no segund
 
 **Pergunta**: qual par é o gargalo? Use o mapa "Taxa de troca (kT)".
 
-### Experimento 5: escada ajustada à mão
+### Teste 5: escada ajustada à mão
 
 **Objetivo**: uniformizar a taxa de troca sem aumentar o número de réplicas.
 
-**Configuração**: parta da escada do experimento 4. Edite o campo kTs: aproxime as temperaturas na região onde a taxa era baixa e afaste-as onde era alta, mantendo o primeiro e o último valores. Clique no botão 1 e rode.
+**Configuração**: parta da escada do teste 4. Edite o campo kTs: aproxime as temperaturas na região onde a taxa era baixa e afaste-as onde era alta, mantendo o primeiro e o último valores. Clique no botão 1 e rode.
 
 **Esperado**: taxa de troca mais uniforme e mais round trips com o mesmo custo.
 
 **Procedimento**: rodar, identificar o par com a menor taxa, aproximar as duas temperaturas desse par e repetir. Métodos sistemáticos para otimizar a escada são descritos na literatura (por exemplo, Katzgraber et al., 2006).
 
-### Experimento 6: frequência de troca
+### Teste 6: frequência de troca
 
 **Objetivo**: ver que a frequência de tentativas controla a velocidade do random walk.
 
-**Configuração**: na escada do experimento 1 (ou 5), rode três vezes, com "troca a cada" igual a 10, 50 e 500, sempre com nsteps 20000.
+**Configuração**: na escada do teste 1 (ou 5), rode três vezes, com "troca a cada" igual a 10, 50 e 500, sempre com nsteps 20000.
 
 **Esperado**
 - A taxa de troca (fração aceita) fica parecida nos três casos.
@@ -661,11 +662,11 @@ A configuração de menor energia esteve no menor kT em 52 % do tempo, no segund
 
 **Conclusão**: para o mesmo custo, trocar com mais frequência entrega mais configurações à réplica de referência.
 
-### Experimento 7: tamanho do sistema
+### Teste 7: tamanho do sistema
 
 **Objetivo**: ver a dependência com √n.
 
-**Configuração**: na escada do experimento 1, mude n para 200 e L para 141 (mantém a densidade). Depois n 400 e L 200. A simulação fica mais lenta.
+**Configuração**: na escada do teste 1, mude n para 200 e L para 141 (mantém a densidade). Depois n 400 e L 200. A simulação fica mais lenta.
 
 **Esperado**
 - A taxa de troca cai em todos os pares quando n aumenta.
@@ -673,7 +674,7 @@ A configuração de menor energia esteve no menor kT em 52 % do tempo, no segund
 
 **Pergunta**: quantas réplicas seriam necessárias para n = 400 ter a mesma taxa de troca que n = 100 tinha com 6? *Estimativa*: √4 = 2 vezes mais intervalos, ou seja, cerca de 11 réplicas.
 
-### Experimento 8: gargalo no meio da escada
+### Teste 8: gargalo no meio da escada
 
 **Objetivo**: reconhecer um gargalo pelos mapas.
 
@@ -690,7 +691,7 @@ Se o par 3-4 ainda trocar bastante, aumente o buraco (por exemplo, 0.55, 0.57, 0
 
 **Conclusão**: a taxa de troca média pode parecer boa enquanto um único par impede a circulação. Olhe sempre o par pior e os round trips.
 
-### Experimento 9: o topo da escada é quente o bastante?
+### Teste 9: o topo da escada é quente o bastante?
 
 **Objetivo**: ver que boa mistura não basta.
 

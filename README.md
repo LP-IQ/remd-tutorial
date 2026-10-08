@@ -8,14 +8,14 @@ A ferramenta do tutorial é uma interface gráfica interativa em Julia (`remd_gu
 
 | Arquivo | O que é |
 | --- | --- |
-| [docs/tutorial.md](docs/tutorial.md) | O tutorial completo: teoria, instalação, visita guiada à GUI, nove experimentos passo a passo, diagnóstico e relação com simulações moleculares |
-| `remd_gui.jl` | A GUI usada nos experimentos |
+| [docs/tutorial.md](docs/tutorial.md) | O tutorial completo: teoria, instalação, visita guiada à GUI, nove testes passo a passo, diagnóstico e relação com simulações moleculares |
+| `remd_gui.jl` | A GUI usada nos testes |
 
 ## Como seguir o tutorial
 
 1. Instale e abra a GUI (seções abaixo).
-2. Abra [docs/tutorial.md](docs/tutorial.md) e siga as seções na ordem: teoria (1 a 4), primeira simulação (5 a 7), parâmetros (8) e experimentos (9).
-3. Em cada experimento, mude um parâmetro por vez, com a mesma semente, e use "Salvar figuras" ao final.
+2. Abra [docs/tutorial.md](docs/tutorial.md) e siga as seções na ordem: teoria (1 a 4), primeira simulação (5 a 7), parâmetros (8) e testes (9).
+3. Em cada teste, mude um parâmetro por vez, com a mesma semente, e use "Salvar figuras" ao final.
 4. Use a tabela de diagnóstico (seção 10) para interpretar o que viu.
 
 ## O que a GUI mostra

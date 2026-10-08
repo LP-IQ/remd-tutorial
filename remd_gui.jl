@@ -169,6 +169,29 @@ end
 tbtext(tb) = (d = tb.displayed_string[]; d === nothing ? "" : strip(String(d)))
 getf(tb) = parse(Float64, tbtext(tb))
 geti(tb) = round(Int, getf(tb))
+# Testes do tutorial (docs/tutorial.md, seção 9): nome no menu => valores dos campos.
+# Campos omitidos voltam ao padrão (PADRAO). A lista kTs é gerada pela escada geométrica,
+# exceto quando "kts" é dado explicitamente.
+const PADRAO = Dict("nrep" => "6", "kmin" => "0.55", "kmax" => "0.86", "n" => "100", "L" => "100.0",
+                    "dt" => "0.05", "nsteps" => "20000", "nex" => "50", "pause" => "0", "nequil" => "2000",
+                    "gam" => "0.1", "eps" => "1.0", "sig" => "2.0", "seed" => "42")
+const TESTES = [
+    "(escolher)"          => Dict{String,String}(),
+    "1: referência"       => Dict{String,String}(),
+    "2a: 3 réplicas"      => Dict("nrep" => "3"),
+    "2b: 2 réplicas"      => Dict("nrep" => "2"),
+    "3: larga, 3 rép."    => Dict("nrep" => "3", "kmin" => "0.35", "kmax" => "1.2", "nequil" => "5000"),
+    "4a: larga, 8 rép."   => Dict("nrep" => "8", "kmin" => "0.35", "kmax" => "1.2", "nequil" => "5000"),
+    "4b: larga, 10 rép."  => Dict("nrep" => "10", "kmin" => "0.35", "kmax" => "1.2", "nequil" => "5000"),
+    "6a: troca a cada 10" => Dict("nex" => "10"),
+    "6b: troca a cada 50" => Dict("nex" => "50"),
+    "6c: troca a cada 500"=> Dict("nex" => "500"),
+    "7a: n = 200"         => Dict("n" => "200", "L" => "141.0"),
+    "7b: n = 400"         => Dict("n" => "400", "L" => "200.0"),
+    "8: gargalo"          => Dict("kts" => "0.55,0.58,0.61,0.80,0.83,0.86"),
+    "9: faixa fria"       => Dict("kmin" => "0.35", "kmax" => "0.45", "nequil" => "5000"),
+]
+
 function settext!(tb, s::String)
     tb.displayed_string[] = s; tb.stored_string[] = s
     return nothing
@@ -225,6 +248,9 @@ function remd_gui()   # se ainda cortar: redimensione a janela ou edite o tamanh
     tb_eps = field("epsilon (poço LJ)", "1.0")
     tb_sig = field("sigma (diâmetro LJ)", "2.0")
     tb_seed = field("semente (0 = aleatória)", "0")
+    row[] += 1
+    Label(left[row[], 1], "Teste"; halign=:right, fontsize=13.5)
+    menu_teste = Menu(left[row[], 2]; options=first.(TESTES), default="(escolher)", height=27, fontsize=13.5, width=145)
     row[] += 1
     Label(left[row[], 1], "Cores"; halign=:right, fontsize=13.5)
     menu_cores = Menu(left[row[], 2]; options=["Destaque (Resto Cinza)", "Colorido"], default="Destaque (Resto Cinza)", height=27, fontsize=13.5, width=145)
@@ -616,6 +642,23 @@ function remd_gui()   # se ainda cortar: redimensione a janela ou edite o tamanh
         return nothing
     end
 
+    # carrega os valores de um teste do tutorial nos campos (não roda nada)
+    on(menu_teste.selection) do sel
+        (sel === nothing || sel == "(escolher)") && return
+        v = merge(PADRAO, Dict(TESTES)[sel])
+        for (k, tb) in (("nrep", tb_nrep), ("kmin", tb_kmin), ("kmax", tb_kmax), ("n", tb_n), ("L", tb_L),
+                        ("dt", tb_dt), ("nsteps", tb_nsteps), ("nex", tb_nex), ("pause", tb_pause),
+                        ("nequil", tb_nequil), ("gam", tb_gam), ("eps", tb_eps), ("sig", tb_sig), ("seed", tb_seed))
+            settext!(tb, v[k])
+        end
+        if haskey(v, "kts")
+            settext!(tb_kts, v["kts"])
+        else
+            R = parse(Int, v["nrep"]); a = parse(Float64, v["kmin"]); b = parse(Float64, v["kmax"])
+            settext!(tb_kts, join([@sprintf("%.3f", a * (b / a)^((i - 1) / (R - 1))) for i in 1:R], ","))
+        end
+        logtext[] = "Teste $sel carregado (semente 42). Clique em '1. Minimizar + Equilibrar' e depois em '2. Run'."
+    end
     on(menu_cores.selection) do pal
         pal === nothing && return
         current_colors[] = PALETTES[pal]
