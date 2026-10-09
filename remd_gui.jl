@@ -198,7 +198,7 @@ function settext!(tb, s::String)
 end
 
 const PALETTES = Dict(
-    "Destaque (demais em cinza)" => [RGBf(0.9, 0.1, 0.1); fill(RGBf(0.65, 0.65, 0.65), MAXREP - 1)],
+    "Destaque" => [RGBf(0.9, 0.1, 0.1); fill(RGBf(0.65, 0.65, 0.65), MAXREP - 1)],
     "Colorido" => [
         RGBf(0.95, 0.1, 0.1), RGBf(0.1, 0.5, 0.8), RGBf(0.2, 0.7, 0.2), RGBf(0.9, 0.6, 0.1),
         RGBf(0.6, 0.3, 0.8), RGBf(0.2, 0.8, 0.8), RGBf(0.9, 0.3, 0.6), RGBf(0.4, 0.4, 0.4),
@@ -253,7 +253,7 @@ function remd_gui()   # se ainda cortar: redimensione a janela ou edite o tamanh
     menu_teste = Menu(left[row[], 2]; options=first.(TESTES), default="(escolher)", height=27, fontsize=13.5, width=145)
     row[] += 1
     Label(left[row[], 1], "Cores"; halign=:right, fontsize=13.5)
-    menu_cores = Menu(left[row[], 2]; options=["Destaque (demais em cinza)", "Colorido"], default="Destaque (demais em cinza)", height=27, fontsize=13.5, width=145)
+    menu_cores = Menu(left[row[], 2]; options=["Destaque", "Colorido"], default="Destaque", height=27, fontsize=13.5, width=145)
     row[] += 1
     Label(left[row[], 1], "Mapa"; halign=:right, fontsize=13.5)
     menu_map = Menu(left[row[], 2]; options=["Ocupação", "Menor energia", "Taxa de troca (kT)", "Trocas entre walkers"], default="Ocupação", height=27, fontsize=13.5, width=145)
@@ -334,7 +334,7 @@ function remd_gui()   # se ainda cortar: redimensione a janela ou edite o tamanh
     busy = Ref(false)           # há uma tarefa de simulação ativa
     lastflag = fill("", MAXREP)
     xrng = MersenneTwister(1234)
-    current_colors = Observable(PALETTES["Destaque (demais em cinza)"])
+    current_colors = Observable(PALETTES["Destaque"])
     Uh = [Float64[] for _ in 1:MAXREP]     # amostras de U por estado (para P(U))
     occ_count = zeros(Int, MAXREP, MAXREP)  # [estado, walker]: nº de registros
     swap_count = zeros(Int, MAXREP, MAXREP) # [walker a, walker b]: trocas aceitas entre os dois
